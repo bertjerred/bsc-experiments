@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENGL102 Grammar Sandbox</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load React -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // === PROFESSOR JERRED: PASTE YOUR GOOGLE API KEY BELOW ===
+        const apiKey = "AIzaSyAEkYerdCV7Gdcl_mVZaaquIoI-IaRep_o"; 
+        // =========================================================
+
+        const { useState } = React;
+
+        // --- SVG Icons ---
+        const IconBook = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const IconSparkles = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>;
+        const IconSend = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+        const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+        const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>;
+        const IconAlert = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
+        const IconRefresh = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>;
+        const IconLightbulb = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>;
+        const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>;
+
+        const TENSES = [
+            "Simple Past", "Simple Present", "Simple Future",
+            "Continuous Past", "Continuous Present", "Continuous Future",
+            "Perfect Past", "Perfect Present", "Perfect Future",
+            "Perfect Continuous Past", "Perfect Continuous Present", "Perfect Continuous Future"
+        ];
+
+        const STRUCTURES = ["Simple", "Compound", "Complex", "Compound-Complex"];
+
+        const PROMPTS = [
+            "Write a Compound sentence about a time-traveling historian.",
+            "Write a Simple Present sentence about your favorite meal.",
+            "Write a Complex sentence about a dog who learns to drive.",
+            "Use the Future Perfect Continuous tense to describe a robot's job.",
+            "Write a Compound-Complex sentence about surviving a zombie apocalypse.",
+            "Use the Past Continuous tense to explain a misunderstanding at a grocery store."
+        ];
+
+        function App() {
+            const [sentence, setSentence] = useState("");
+            const [selectedTense, setSelectedTense] = useState("");
+            const [selectedStructure, setSelectedStructure] = useState("");
+            const [feedback, setFeedback] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [showHints, setShowHints] = useState(false);
+
+            const fetchWithRetry = async (url, options, retries = 5) => {
+                let delay = 1000;
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return await response.json();
+                    } catch (e) {
+                        if (i === retries - 1) throw e;
+                        await new Promise(res => setTimeout(res, delay));
+                        delay *= 2;
+                    }
+                }
+            };
+
+            const handleCheckGrammar = async () => {
+                if (apiKey === "YOUR_API_KEY_HERE") {
+                    setError("Professor: Please add your Gemini API key to the code to activate the sandbox.");
+                    return;
+                }
+
+                if (!sentence.trim() || !selectedTense || !selectedStructure) {
+                    setError("Please write a sentence and select both a tense and a structure.");
+                    return;
+                }
+
+                setIsLoading(true);
+                setError(null);
+                setFeedback(null);
+
+                const promptText = `
+                    Evaluate the following English sentence written by a student.
+                    Sentence: "${sentence}"
+                    Student believes the Tense is: "${selectedTense}"
+                    Student believes the Structure is: "${selectedStructure}"
+                `;
+
+                const payload = {
+                    contents: [{ parts: [{ text: promptText }] }],
+                    systemInstruction: {
+                        parts: [{ text: "You are a helpful, encouraging English 102 professor evaluating a student's grammar. Check their sentence against the 12 verb tenses and 4 sentence structures (Simple, Compound, Complex, Compound-Complex). Also evaluate if they have proper subject-verb agreement." }]
+                    },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                isTenseCorrect: { type: "BOOLEAN", description: "Did the student correctly identify their verb tense?" },
+                                actualTense: { type: "STRING", description: "The actual primary verb tense used in the sentence." },
+                                isStructureCorrect: { type: "BOOLEAN", description: "Did the student correctly identify the sentence structure?" },
+                                actualStructure: { type: "STRING", description: "The actual sentence structure (Simple, Compound, Complex, Compound-Complex)." },
+                                hasSubjectVerbAgreement: { type: "BOOLEAN", description: "Does the sentence have correct subject-verb agreement?" },
+                                professorNote: { type: "STRING", description: "A friendly 2-3 sentence explanation of why the tense/structure is what it is, and addressing any subject-verb agreement errors." }
+                            },
+                            required: ["isTenseCorrect", "actualTense", "isStructureCorrect", "actualStructure", "hasSubjectVerbAgreement", "professorNote"]
+                        }
+                    }
+                };
+
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                    const result = await fetchWithRetry(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (jsonText) {
+                        setFeedback(JSON.parse(jsonText));
+                    } else {
+                        throw new Error("Invalid response format");
+                    }
+                } catch (err) {
+                    setError("Sorry, the professor is grading other papers right now. Please try again in a moment!");
+                    console.error(err);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            const generatePrompt = () => {
+                const random = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
+                setSentence(random);
+                setFeedback(null);
+            };
+
+            return (
+                <div className="min-h-screen p-4 md:p-8">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        
+                        {/* Header */}
+                        <header className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+                            <div className="bg-blue-600 p-3 rounded-xl text-white shadow-md">
+                                <IconBook />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold text-slate-900">ENGL102 Grammar Sandbox</h1>
+                                <p className="text-slate-500">Module 2: Tenses, Clauses, & Sentence Structure</p>
+                            </div>
+                        </header>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {/* Left Column: Input Area */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                                
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-end">
+                                        <label className="font-semibold text-slate-700 block">Write a sentence from your imagination:</label>
+                                        <button 
+                                            onClick={generatePrompt}
+                                            className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors font-medium bg-blue-50 px-2 py-1 rounded-md"
+                                        >
+                                            <IconSparkles /> Need a Prompt?
+                                        </button>
+                                    </div>
+                                    <textarea 
+                                    value={sentence}
+                                    onChange={(e) => setSentence(e.target.value)}
+                                    placeholder="The quick brown fox jumped over the lazy dog..."
+                                    className="w-full h-32 p-4 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-slate-50"
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <p className="font-semibold text-slate-700">Self-Assessment</p>
+                                    <button 
+                                        onClick={() => setShowHints(true)} 
+                                        className="text-sm flex items-center gap-1 text-amber-600 hover:text-amber-700 font-medium bg-amber-50 px-3 py-1 rounded-full transition-colors"
+                                    >
+                                        <IconLightbulb /> Quick Review Guide
+                                    </button>
+                                </div>
+                                
+                                <div className="space-y-1">
+                                    <label className="text-sm text-slate-600 font-medium">What Verb Tense did you use?</label>
+                                        <select 
+                                            value={selectedTense} 
+                                            onChange={(e) => setSelectedTense(e.target.value)}
+                                            className="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                        >
+                                            <option value="" disabled>Select a Tense...</option>
+                                            {TENSES.map(t => <option key={t} value={t}>{t}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-sm text-slate-600 font-medium">What is the Sentence Structure?</label>
+                                        <select 
+                                            value={selectedStructure} 
+                                            onChange={(e) => setSelectedStructure(e.target.value)}
+                                            className="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                        >
+                                            <option value="" disabled>Select a Structure...</option>
+                                            {STRUCTURES.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={handleCheckGrammar}
+                                    disabled={isLoading}
+                                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                                >
+                                    {isLoading ? (
+                                        <><IconRefresh className="animate-spin" /> Evaluating...</>
+                                    ) : (
+                                        <><IconSend /> Check My Grammar</>
+                                    )}
+                                </button>
+
+                                {error && (
+                                    <div className="p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-3 text-sm font-medium border border-red-100">
+                                        <IconAlert /> {error}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right Column: Feedback Area */}
+                            <div className="bg-slate-100 rounded-2xl border border-slate-200 p-6 flex flex-col h-full relative overflow-hidden">
+                                <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    Professor's Feedback
+                                </h2>
+
+                                {!feedback && !isLoading && (
+                                    <div className="flex-grow flex flex-col items-center justify-center text-slate-400 text-center p-8">
+                                        <div className="mb-4 opacity-20"><IconBook /></div>
+                                        <p>Write your sentence and submit it to see how well you understand Module 2 concepts!</p>
+                                    </div>
+                                )}
+
+                                {isLoading && (
+                                    <div className="flex-grow flex flex-col items-center justify-center text-slate-500">
+                                        <IconRefresh className="animate-spin mb-4 text-blue-500" />
+                                        <p className="animate-pulse font-medium">Analyzing clauses and verbs...</p>
+                                    </div>
+                                )}
+
+                                {feedback && !isLoading && (
+                                    <div className="space-y-4 flex-grow transition-all duration-500">
+                                        
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* Tense Result */}
+                                            <div className={`p-4 rounded-xl border ${feedback.isTenseCorrect ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'}`}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-sm font-bold uppercase tracking-wider opacity-70">Verb Tense</span>
+                                                    {feedback.isTenseCorrect ? <IconCheck /> : <IconX />}
+                                                </div>
+                                                <p className="text-lg font-semibold">{feedback.actualTense}</p>
+                                                {!feedback.isTenseCorrect && <p className="text-xs mt-1 opacity-80">You guessed: {selectedTense}</p>}
+                                            </div>
+
+                                            {/* Structure Result */}
+                                            <div className={`p-4 rounded-xl border ${feedback.isStructureCorrect ? 'bg-green-50 border-green-200 text-green-800' : 'bg-orange-50 border-orange-200 text-orange-800'}`}>
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-sm font-bold uppercase tracking-wider opacity-70">Structure</span>
+                                                    {feedback.isStructureCorrect ? <IconCheck /> : <IconX />}
+                                                </div>
+                                                <p className="text-lg font-semibold">{feedback.actualStructure}</p>
+                                                {!feedback.isStructureCorrect && <p className="text-xs mt-1 opacity-80">You guessed: {selectedStructure}</p>}
+                                            </div>
+                                        </div>
+
+                                        {/* SVA Check */}
+                                        <div className={`p-4 rounded-xl border flex items-center gap-3 ${feedback.hasSubjectVerbAgreement ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-red-50 border-red-200 text-red-800'}`}>
+                                            {feedback.hasSubjectVerbAgreement ? <IconCheck /> : <IconAlert />}
+                                            <div>
+                                                <p className="font-bold">Subject-Verb Agreement</p>
+                                                <p className="text-sm opacity-90">{feedback.hasSubjectVerbAgreement ? "Looks good! Your subjects and verbs match." : "Watch out! There is an error with your subject-verb agreement."}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Professor's Note */}
+                                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mt-4">
+                                            <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                                <IconSparkles /> Notes
+                                            </h3>
+                                            <p className="text-slate-600 leading-relaxed text-sm">
+                                                {feedback.professorNote}
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Quick Review Guide Modal */}
+                    {showHints && (
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+                                <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800">
+                                        <IconLightbulb /> Quick Review Guide
+                                    </h2>
+                                    <button onClick={() => setShowHints(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                        <IconClose />
+                                    </button>
+                                </div>
+                                <div className="p-6 overflow-y-auto space-y-8 bg-white">
+                                    
+                                    {/* Sentence Structures */}
+                                    <section>
+                                        <h3 className="font-bold text-lg text-blue-700 border-b pb-2 mb-3">1. Sentence Structures</h3>
+                                        <ul className="space-y-3 text-sm text-slate-600">
+                                            <li><strong className="text-slate-800">Simple:</strong> 1 Independent Clause. <br/><span className="italic text-slate-500">Ex: "I kicked the ball."</span></li>
+                                            <li><strong className="text-slate-800">Compound:</strong> 2 or more Independent Clauses. <br/><span className="italic text-slate-500">Ex: "I kicked the ball, and it hit Tom."</span></li>
+                                            <li><strong className="text-slate-800">Complex:</strong> 1 Independent + 1 or more Dependent Clauses. <br/><span className="italic text-slate-500">Ex: "Tom cried because the ball hit him."</span></li>
+                                            <li><strong className="text-slate-800">Compound-Complex:</strong> 2+ Independent + 1+ Dependent Clauses. <br/><span className="italic text-slate-500">Ex: "Tom cried because the ball hit him, and I apologized immediately."</span></li>
+                                        </ul>
+                                    </section>
+
+                                    {/* Verb Tenses */}
+                                    <section>
+                                        <h3 className="font-bold text-lg text-blue-700 border-b pb-2 mb-3">2. Verb Tenses (Present Examples)</h3>
+                                        <ul className="space-y-3 text-sm text-slate-600">
+                                            <li><strong className="text-slate-800">Simple:</strong> Action currently happening/general truth. <br/><span className="italic text-slate-500">Ex: "I eat pizza."</span></li>
+                                            <li><strong className="text-slate-800">Continuous:</strong> Action currently ongoing (am/is/are + verb-ing). <br/><span className="italic text-slate-500">Ex: "I am eating pizza right now."</span></li>
+                                            <li><strong className="text-slate-800">Perfect:</strong> Action completed/ended (has/have + verb-ed). <br/><span className="italic text-slate-500">Ex: "I have eaten all of the pizza."</span></li>
+                                            <li><strong className="text-slate-800">Perfect Continuous:</strong> Ongoing for some time, still continuing. <br/><span className="italic text-slate-500">Ex: "I have been eating pizza for 2 hours."</span></li>
+                                        </ul>
+                                    </section>
+
+                                    {/* Subject Verb Agreement */}
+                                    <section>
+                                        <h3 className="font-bold text-lg text-blue-700 border-b pb-2 mb-3">3. Subject-Verb Agreement</h3>
+                                        <ul className="space-y-3 text-sm text-slate-600">
+                                            <li><strong className="text-slate-800">Singular Match:</strong> 1 Subject = Singular Verb <br/><span className="italic text-slate-500">Ex: "Barry goes to the library."</span></li>
+                                            <li><strong className="text-slate-800">Plural Match:</strong> 2+ Subjects = Plural Verb <br/><span className="italic text-slate-500">Ex: "Mom and Dad are coming to my game."</span></li>
+                                            <li className="bg-slate-50 p-3 rounded border border-slate-100 mt-2">
+                                                <strong className="text-slate-800">Pro Tip:</strong> Ignore phrases separated by commas like "as well as". <br/>
+                                                <span className="italic text-slate-500">Ex: "The dancers, as well as their choreographer, go to the stage."</span>
+                                            </li>
+                                        </ul>
+                                    </section>
+
+                                </div>
+                                <div className="p-4 border-t border-slate-100 bg-slate-50 text-right">
+                                    <button onClick={() => setShowHints(false)} className="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                        Got it!
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
